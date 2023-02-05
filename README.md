@@ -2,6 +2,8 @@
 A GNOME extension that allows you to toggle auto brightness from quick settings.<br>
 Currently supports: GNOME 43.
 
+[<img alt="Get it on GNOME Extensions" height="90" src="https://raw.githubusercontent.com/andyholmes/gnome-shell-extensions-badge/master/get-it-on-ego.svg?sanitize=true">](https://extensions.gnome.org/extension/5736/auto-brightness-toggle/)
+
 ## Usage:
 Install -> Works OOB (No extra config needed)
 
