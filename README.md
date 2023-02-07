@@ -7,6 +7,11 @@ Currently supports: GNOME 43.
 ## Usage:
 Install -> Works OOB (No extra config needed)
 
+## To-Do:
+- [ ] Add detection of the availability of auto brightness (check if hardware/OS supports)
+- [ ] Add custom "auto brightness" icon
+- [ ] Translation (haven't tested)
+
 ## Fun Fact:
 Once upon a time, I needed something to quickly turn on/off auto brightness just like on a smartphone. Then after a quick search I discovered this extension: https://github.com/diegonz/toggle-auto-brightness. It looks exactly what I needed! Until... it won't install on my Fedora 37!
 
