@@ -3,7 +3,7 @@
   "description": "Toggle auto brightness in quick settings",
   "uuid": "auto-brightness-toggle@sao.studio",
   "url": "https://github.com/m1nicrusher/auto-brightness-toggle",
-  "version": 1,
+  "version": 2,
   "shell-version": [
     "43"
   ]
