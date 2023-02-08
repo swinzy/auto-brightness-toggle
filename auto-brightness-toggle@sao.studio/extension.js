@@ -21,8 +21,8 @@ const {Gio, GObject} = imports.gi;
 const QuickSettings = imports.ui.quickSettings;
 const QuickSettingsMenu = imports.ui.main.panel.statusArea.quickSettings;
 
-const SCHEMA = 'org.gnome.settings-daemon.plugins.power';
-const KEY = 'ambient-enabled';
+const SCHEMA = "org.gnome.settings-daemon.plugins.power";
+const KEY = "ambient-enabled";
 
 let indicator = null;
 
@@ -30,22 +30,31 @@ function init() { }
 
 function enable() {
     indicator = new AutoBrightnessIndicator();
+
+    // If auto brightness is not supported, make the toggle grey out
+    if (!isAutoBrightnessSupported()) {
+        log("Auto brightness is not supported on this system. Toggle is disabled.");
+        indicator.set_enable(false);
+    }
 }
 
 function disable() {
-    indicator.destroy();
-    indicator = null;
+    if (indicator) {
+        indicator.destroy();
+        indicator = null;
+    }
 }
 
 const AutoBrightnessToggle = GObject.registerClass(
     class AutoBrightnessToggle extends QuickSettings.QuickToggle {
+        
         _init() {
             super._init({
                 label: "Auto Brightness",
                 iconName: "display-brightness-symbolic",
                 toggleMode: true,
             });
-    
+          
             // Binding the toggle to the GSettings key
             this._settings = new Gio.Settings({
                 schema_id: SCHEMA,
@@ -71,5 +80,15 @@ var AutoBrightnessIndicator = GObject.registerClass(
             this.quickSettingsItems.forEach(item => item.destroy());
             super.destroy();
         }
+
+        // Grey out/ungrey the toggle button
+        set_enable(enable) {
+            this.quickSettingsItems.forEach(item => item.set_reactive(enable));
+        }
     });
-        
+
+// Check if the feature is supported on the system
+function isAutoBrightnessSupported() {
+    // Borrowed from diegonz/toggle-auto-brightness
+    return Gio.Settings.list_schemas().indexOf(SCHEMA) != -1;
+}
