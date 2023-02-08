@@ -32,10 +32,21 @@ function enable() {
     indicator = new AutoBrightnessIndicator();
 
     // If auto brightness is not supported, make the toggle grey out
+    /* Note:
+     * I'm not sure if greying out is a good idea.
+     * From the perspective of GNOME itself, for example, when Wi-Fi hardware
+     * is not available, Wi-Fi toggle will not show in quick settings (rather
+     * than greying out).
+     * However, from UX perspective, not showing any option may confuse users
+     * i.e. they may wonder if the extension itself is not working rather than
+     * thinking of system compatibility because there is no direct cue for it.
+     */ 
     if (!isAutoBrightnessSupported()) {
         log("Auto brightness is not supported on this system. Toggle is disabled.");
         indicator.set_enable(false);
     }
+
+
 }
 
 function disable() {
