@@ -16,6 +16,9 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
+const Config = imports.misc.config;
+const ShellVersion = Number(Config.PACKAGE_VERSION.split('.')[0]);
+
 const {Gio, GObject} = imports.gi;
 
 const QuickSettings = imports.ui.quickSettings;
@@ -61,7 +64,7 @@ const AutoBrightnessToggle = GObject.registerClass(
         
         _init() {
             super._init({
-                label: "Auto Brightness",
+                [ShellVersion >= 44 ? 'title' : 'label']: "Auto Brightness",
                 iconName: "display-brightness-symbolic",
                 toggleMode: true,
             });
