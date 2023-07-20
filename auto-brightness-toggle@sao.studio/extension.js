@@ -21,10 +21,24 @@ const {Gio, GObject} = imports.gi;
 const QuickSettings = imports.ui.quickSettings;
 const QuickSettingsMenu = imports.ui.main.panel.statusArea.quickSettings;
 
+const Config = imports.misc.config;
+const ShellVersion = Number(Config.PACKAGE_VERSION.split('.')[0]);
+
 const SCHEMA = "org.gnome.settings-daemon.plugins.power";
 const KEY = "ambient-enabled";
 
 let indicator = null;
+
+function addQuickSettingsItems(items) {
+    // Add the items with the built-in function
+    QuickSettingsMenu._addItems(items);
+
+    // Ensure the tile(s) are above the background apps menu
+    for (const item of items) {
+        QuickSettingsMenu.menu._grid.set_child_below_sibling(item,
+            QuickSettingsMenu._backgroundApps.quickSettingsItems[0]);
+    }
+};
 
 function init() { }
 
@@ -61,7 +75,7 @@ const AutoBrightnessToggle = GObject.registerClass(
         
         _init() {
             super._init({
-                label: "Auto Brightness",
+                [ShellVersion >= 44 ? 'title' : 'label']: "Auto Brightness",
                 iconName: "display-brightness-symbolic",
                 toggleMode: true,
             });
@@ -84,7 +98,7 @@ var AutoBrightnessIndicator = GObject.registerClass(
         
             this.quickSettingsItems.push(new AutoBrightnessToggle());
             QuickSettingsMenu._indicators.add_child(this);
-            QuickSettingsMenu._addItems(this.quickSettingsItems);
+            addQuickSettingsItems(this.quickSettingsItems);
         }
 
         destroy() {
