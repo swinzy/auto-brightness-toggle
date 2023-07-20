@@ -21,9 +21,6 @@ const {Gio, GObject} = imports.gi;
 const QuickSettings = imports.ui.quickSettings;
 const QuickSettingsMenu = imports.ui.main.panel.statusArea.quickSettings;
 
-const Config = imports.misc.config;
-const ShellVersion = Number(Config.PACKAGE_VERSION.split('.')[0]);
-
 const SCHEMA = "org.gnome.settings-daemon.plugins.power";
 const KEY = "ambient-enabled";
 
@@ -75,7 +72,7 @@ const AutoBrightnessToggle = GObject.registerClass(
         
         _init() {
             super._init({
-                [ShellVersion >= 44 ? 'title' : 'label']: "Auto Brightness",
+                label: "Auto Brightness",
                 iconName: "display-brightness-symbolic",
                 toggleMode: true,
             });
