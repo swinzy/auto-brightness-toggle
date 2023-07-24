@@ -29,6 +29,17 @@ const KEY = "ambient-enabled";
 
 let indicator = null;
 
+function addQuickSettingsItems(items) {
+    // Add the items with the built-in function
+    QuickSettingsMenu._addItems(items);
+
+    // Ensure the tile(s) are above the background apps menu
+    for (const item of items) {
+        QuickSettingsMenu.menu._grid.set_child_below_sibling(item,
+            QuickSettingsMenu._backgroundApps.quickSettingsItems[0]);
+    }
+};
+
 function init() { }
 
 function enable() {
@@ -87,7 +98,7 @@ var AutoBrightnessIndicator = GObject.registerClass(
         
             this.quickSettingsItems.push(new AutoBrightnessToggle());
             QuickSettingsMenu._indicators.add_child(this);
-            QuickSettingsMenu._addItems(this.quickSettingsItems);
+            addQuickSettingsItems(this.quickSettingsItems);
         }
 
         destroy() {
