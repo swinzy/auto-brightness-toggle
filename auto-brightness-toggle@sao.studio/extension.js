@@ -16,29 +16,17 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-const Config = imports.misc.config;
-const ShellVersion = Number(Config.PACKAGE_VERSION.split('.')[0]);
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
 
-const {Gio, GObject} = imports.gi;
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 
-const QuickSettings = imports.ui.quickSettings;
-const QuickSettingsMenu = imports.ui.main.panel.statusArea.quickSettings;
+import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js';
 
 const SCHEMA = "org.gnome.settings-daemon.plugins.power";
 const KEY = "ambient-enabled";
 
 let indicator = null;
-
-function addQuickSettingsItems(items) {
-    // Add the items with the built-in function
-    QuickSettingsMenu._addItems(items);
-
-    // Ensure the tile(s) are above the background apps menu
-    for (const item of items) {
-        QuickSettingsMenu.menu._grid.set_child_below_sibling(item,
-            QuickSettingsMenu._backgroundApps.quickSettingsItems[0]);
-    }
-};
 
 function init() { }
 
@@ -75,7 +63,7 @@ const AutoBrightnessToggle = GObject.registerClass(
         
         _init() {
             super._init({
-                [ShellVersion >= 44 ? 'title' : 'label']: "Auto Brightness",
+                'title': "Auto Brightness",
                 iconName: "display-brightness-symbolic",
                 toggleMode: true,
             });
@@ -97,8 +85,7 @@ var AutoBrightnessIndicator = GObject.registerClass(
             super._init();
         
             this.quickSettingsItems.push(new AutoBrightnessToggle());
-            QuickSettingsMenu._indicators.add_child(this);
-            addQuickSettingsItems(this.quickSettingsItems);
+            Main.panel.statusArea.quickSettings.addExternalIndicator(this);
         }
 
         destroy() {
