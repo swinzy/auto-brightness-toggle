@@ -16,66 +16,21 @@
  * SPDX-License-Identifier: GPL-2.0-or-later
  */
 
-const Config = imports.misc.config;
-const ShellVersion = Number(Config.PACKAGE_VERSION.split('.')[0]);
-
-const {Gio, GObject} = imports.gi;
-
-const QuickSettings = imports.ui.quickSettings;
-const QuickSettingsMenu = imports.ui.main.panel.statusArea.quickSettings;
+import Gio from 'gi://Gio';
+import GObject from 'gi://GObject';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js';
+import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const SCHEMA = "org.gnome.settings-daemon.plugins.power";
 const KEY = "ambient-enabled";
-
-let indicator = null;
-
-function addQuickSettingsItems(items) {
-    // Add the items with the built-in function
-    QuickSettingsMenu._addItems(items);
-
-    // Ensure the tile(s) are above the background apps menu
-    for (const item of items) {
-        QuickSettingsMenu.menu._grid.set_child_below_sibling(item,
-            QuickSettingsMenu._backgroundApps.quickSettingsItems[0]);
-    }
-};
-
-function init() { }
-
-function enable() {
-    indicator = new AutoBrightnessIndicator();
-
-    // If auto brightness is not supported, make the toggle grey out
-    /* Note:
-     * I'm not sure if greying out is a good idea.
-     * From the perspective of GNOME itself, for example, when Wi-Fi hardware
-     * is not available, Wi-Fi toggle will not show in quick settings (rather
-     * than greying out).
-     * However, from UX perspective, not showing any option may confuse users
-     * i.e. they may wonder if the extension itself is not working rather than
-     * thinking of system compatibility because there is no direct cue for it.
-     */ 
-    if (!isAutoBrightnessSupported()) {
-        log("Auto brightness is not supported on this system. Toggle is disabled.");
-        indicator.set_enable(false);
-    }
-
-
-}
-
-function disable() {
-    if (indicator) {
-        indicator.destroy();
-        indicator = null;
-    }
-}
 
 const AutoBrightnessToggle = GObject.registerClass(
     class AutoBrightnessToggle extends QuickSettings.QuickToggle {
         
         _init() {
             super._init({
-                [ShellVersion >= 44 ? 'title' : 'label']: "Auto Brightness",
+                'title': "Auto Brightness",
                 iconName: "display-brightness-symbolic",
                 toggleMode: true,
             });
@@ -97,8 +52,7 @@ var AutoBrightnessIndicator = GObject.registerClass(
             super._init();
         
             this.quickSettingsItems.push(new AutoBrightnessToggle());
-            QuickSettingsMenu._indicators.add_child(this);
-            addQuickSettingsItems(this.quickSettingsItems);
+            Main.panel.statusArea.quickSettings.addExternalIndicator(this);
         }
 
         destroy() {
@@ -112,8 +66,41 @@ var AutoBrightnessIndicator = GObject.registerClass(
         }
     });
 
-// Check if the feature is supported on the system
-function isAutoBrightnessSupported() {
-    // Borrowed from diegonz/toggle-auto-brightness
-    return Gio.Settings.list_schemas().indexOf(SCHEMA) != -1;
+export default class AutoBrightnessToggleExtension extends Extension {
+    constructor(metadata) {
+        super(metadata);
+        this._indicator = null;
+    }
+
+    // Check if the feature is supported on the system
+    isAutoBrightnessSupported() {
+        // Borrowed from diegonz/toggle-auto-brightness
+        return Gio.Settings.list_schemas().indexOf(SCHEMA) != -1;
+    }
+
+    enable() {
+        this._indicator = new AutoBrightnessIndicator();
+
+        // If auto brightness is not supported, make the toggle grey out
+        /* Note:
+         * I'm not sure if greying out is a good idea.
+         * From the perspective of GNOME itself, for example, when Wi-Fi hardware
+         * is not available, Wi-Fi toggle will not show in quick settings (rather
+         * than greying out).
+         * However, from UX perspective, not showing any option may confuse users
+         * i.e. they may wonder if the extension itself is not working rather than
+         * thinking of system compatibility because there is no direct cue for it.
+         */ 
+        if (!this.isAutoBrightnessSupported()) {
+            log("Auto brightness is not supported on this system. Toggle is disabled.");
+            this._indicator.set_enable(false);
+        }
+    }
+
+    disable() {
+        if (this._indicator) {
+            this._indicator.destroy();
+            this._indicator = null;
+        }
+    }
 }
