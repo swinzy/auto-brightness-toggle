@@ -5,6 +5,7 @@
   "url": "https://github.com/m1nicrusher/auto-brightness-toggle",
   "version": 3,
   "shell-version": [
-    "45"
+    "45",
+    "46"
   ]
 }
