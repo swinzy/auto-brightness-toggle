@@ -36,7 +36,7 @@ const AUTO_ICON_SVG = "icons/auto-brightness-symbolic.svg";
 // You can use `journalctl -f | grep '\[AutoBrightnessToggle\]'` to see realtime logs.
 const EXT_LOG_NAME = "[AutoBrightnessToggle]";
 const extLog = (msg) => {
-    log(EXT_LOG_NAME, msg);
+    console.log(EXT_LOG_NAME, msg);
 }
 
 const AutoBrightnessToggle = GObject.registerClass(
