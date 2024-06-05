@@ -34,6 +34,15 @@ export default class AutoBrightnessTogglePreferences extends ExtensionPreference
                 "in the quick settings."),
         });
         behaviourGroup.add(showQuickSettingsRow);
+
+        const initAbRow = new Adw.SwitchRow({
+            title: _("Enable Initial Auto Brightness"),
+            subtitle: _("Automatically determine a brightness level when you " + 
+                "first start / logon / recover from sleep by enabling auto brightness " + 
+                "for a short period of time. This is helpful when you need to frequently " + 
+                "move your device to various environments."),
+        });
+        behaviourGroup.add(initAbRow);
         
         const linkGroup = new Adw.PreferencesGroup();
         page.add(linkGroup);
@@ -62,6 +71,8 @@ export default class AutoBrightnessTogglePreferences extends ExtensionPreference
         window._settings.bind("override-system-brightness-slider", overrideSystemSliderRow, 
             "active", Gio.SettingsBindFlags.DEFAULT);
         window._settings.bind("show-in-quick-settings", showQuickSettingsRow,
+            "active", Gio.SettingsBindFlags.DEFAULT);
+        window._settings.bind("auto-initial-brightness", initAbRow, 
             "active", Gio.SettingsBindFlags.DEFAULT);
     }
 }

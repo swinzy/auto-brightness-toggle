@@ -1,4 +1,5 @@
 /* extension.js
+ * Application: GNOME Extension - Auto Brightness Toggle
  * Author: Stephen Zhang
  *
  * This program is free software: you can redistribute it and/or modify
@@ -29,6 +30,9 @@ const KEY = "ambient-enabled";
 const PREFS_SCHEMA = "org.gnome.shell.extensions.auto-brightness-toggle";
 const SYSTEM_BT_SLIDER_KEY = "override-system-brightness-slider";
 const SHOW_QUICK_SETTINGS_KEY = "show-in-quick-settings";
+const AUTO_INIT_BT_KEY = "auto-initial-brightness";
+
+const INIT_AB_TIMEOUT = 3000;
 
 // This is generated from "Icon Library"
 const AUTO_ICON_SVG = "icons/auto-brightness-symbolic.svg";
@@ -84,6 +88,7 @@ export default class AutoBrightnessToggleExtension extends Extension {
         this._prefsListener = [];
     }
 
+    // TODO: This is NOT working as per my test
     // Check if the feature is supported on the system
     isAutoBrightnessSupported() {
         // Borrowed from diegonz/toggle-auto-brightness
@@ -131,6 +136,23 @@ export default class AutoBrightnessToggleExtension extends Extension {
         // Load preferences initially
         this.overrideSystemBrightnessSlider(this._settings.get_boolean(SYSTEM_BT_SLIDER_KEY));
         this.showInQuickSettings(this._settings.get_boolean(SHOW_QUICK_SETTINGS_KEY));
+
+        if (this._hInitAbTimer) {
+            clearTimeout(this._hInitAbTimer);
+            this._hInitAbTimer = null;
+        }
+        // Perform initial auto brightness
+        let isAbOn = this._autoBrightnessSettings.get_boolean(KEY); 
+        if (!isAbOn) {
+            let isInitAbOn = this._settings.get_boolean(AUTO_INIT_BT_KEY);
+            if (isInitAbOn) {
+                this._autoBrightnessSettings.set_boolean(KEY, true);
+                this._hInitAbTimer = setTimeout(() => {
+                    this._autoBrightnessSettings.set_boolean(KEY, false);
+                    this._hInitAbTimer = null;
+                }, INIT_AB_TIMEOUT);
+            }
+        }
 
         extLog("Extension activated.");
     }
@@ -188,6 +210,13 @@ export default class AutoBrightnessToggleExtension extends Extension {
         // Disconnect all listeners if any
         while (this._prefsListener.length != 0) {
             this._settings.disconnect(this._prefsListener.pop());
+        }
+        
+        // If init ab timer ticking, stop & clear time and revert auto brightness settings
+        if (this._hInitAbTimer) {
+            clearTimeout(this._hInitAbTimer);
+            this._autoBrightnessSettings.set_boolean(KEY, false);
+            this._hInitAbTimer = null;
         }
         this.showInQuickSettings(false);
         this.overrideSystemBrightnessSlider(false);
