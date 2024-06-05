@@ -8,5 +8,8 @@
         <key name="show-in-quick-settings" type="b">
             <default>false</default>
         </key>
+        <key name="auto-initial-brightness" type="b">
+            <default>false</default>
+        </key>
     </schema>
 </schemalist>
