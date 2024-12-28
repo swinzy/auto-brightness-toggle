@@ -19,6 +19,7 @@
  */
 
 import Gio from "gi://Gio";
+import GLib from 'gi://GLib';
 import GObject from "gi://GObject";
 import St from "gi://St";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
@@ -96,6 +97,19 @@ export default class AutoBrightnessToggleExtension extends Extension {
     }
 
     enable() {
+        if (Main.panel.statusArea.quickSettings._brightness)
+            this._enable();
+        else
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                if (!Main.panel.statusArea.quickSettings._brightness)
+                    return GLib.SOURCE_CONTINUE;
+
+                this._enable();
+                return GLib.SOURCE_REMOVE;
+            });
+    }
+
+    _enable() {
         // If auto brightness is not supported, throw error 
         if (!this.isAutoBrightnessSupported()) {
             throw new Error("Auto brightness is not supported on this system. \n" +
