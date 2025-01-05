@@ -2,9 +2,9 @@
   "name": "Auto Brightness Toggle",
   "description": "Toggle auto brightness in quick settings",
   "uuid": "auto-brightness-toggle@sao.studio",
-  "url": "https://github.com/m1nicrusher/auto-brightness-toggle",
+  "url": "https://github.com/swinzy/auto-brightness-toggle",
   "settings-schema": "org.gnome.shell.extensions.auto-brightness-toggle", 
-  "version": 4,
+  "version": 5,
   "shell-version": [
     "45",
     "46",

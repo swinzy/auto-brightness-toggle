@@ -56,13 +56,13 @@ export default class AutoBrightnessTogglePreferences extends ExtensionPreference
 
         const githubLink = new Gtk.LinkButton({
             label: "Github",
-            uri: "https://github.com/m1nicrusher/auto-brightness-toggle",
+            uri: "https://github.com/swinzy/auto-brightness-toggle",
         });
         linkBox.append(githubLink);
 
         const reportLink = new Gtk.LinkButton({
             label: "Report Bugs",
-            uri: "https://github.com/m1nicrusher/auto-brightness-toggle/issues",
+            uri: "https://github.com/swinzy/auto-brightness-toggle/issues",
         });
         linkBox.append(reportLink);
 

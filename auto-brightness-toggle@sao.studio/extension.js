@@ -33,6 +33,8 @@ const SYSTEM_BT_SLIDER_KEY = "override-system-brightness-slider";
 const SHOW_QUICK_SETTINGS_KEY = "show-in-quick-settings";
 const AUTO_INIT_BT_KEY = "auto-initial-brightness";
 
+const FIND_SYS_BT_SLIDER_TIMEOUT = 1000;
+const FIND_SYS_BT_SLIDER_MAX_RETRY = 10;
 const INIT_AB_TIMEOUT = 3000;
 
 // This is generated from "Icon Library"
@@ -97,23 +99,50 @@ export default class AutoBrightnessToggleExtension extends Extension {
     }
 
     enable() {
-        if (Main.panel.statusArea.quickSettings._brightness)
+        // If we can find brightness slider then enable now
+        if (Main.panel.statusArea.quickSettings._brightness) {
+            extLog("Brightness slider found.");
             this._enable();
-        else
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                if (!Main.panel.statusArea.quickSettings._brightness)
-                    return GLib.SOURCE_CONTINUE;
+        } else {
+            extLog("Brightness slider not found. Waiting for it to appear...");
+            let tries = 0;
 
-                this._enable();
-                return GLib.SOURCE_REMOVE;
+            // Remove previous timer
+            if (this._hBtSliderTimer) {
+                GLib.source_remove(this._hBtSliderTimer);
+                this._hBtSliderTimer = null;
+            }
+
+            // Set timer loop to try finding system brightness slider
+            this._hBtSliderTimer = GLib.timeout_add(GLib.PRIORITY_DEFAULT, FIND_SYS_BT_SLIDER_TIMEOUT, () => {
+                // If too many retries
+                if (tries >= FIND_SYS_BT_SLIDER_MAX_RETRY) {
+                    extLog("Too many retries. Aborting.");
+                    // TODO: For some reason this does not throw in my gnome-extensions app
+                    throw new Error("Cannot find system brightness slider.");
+                    return false;
+                }
+
+                // FOUND
+                if (Main.panel.statusArea.quickSettings._brightness) {
+                    extLog("Brightness slider found.");
+                    this._enable();
+                    return false;
+                }
+
+                // NOT FOUND
+                extLog(`Brightness slider still not found. Retrying: (${tries}/${FIND_SYS_BT_SLIDER_MAX_RETRY})`);
+                tries++;
+                return true;
             });
+        }
     }
 
     _enable() {
         // If auto brightness is not supported, throw error 
         if (!this.isAutoBrightnessSupported()) {
             throw new Error("Auto brightness is not supported on this system. \n" +
-                "Visit https://github.com/m1nicrusher/auto-brightness-toggle/wiki for more information.");
+                "Visit https://github.com/swinzy/auto-brightness-toggle/wiki for more information.");
             return;
         }
         // Get the system brightness slider
@@ -195,7 +224,7 @@ export default class AutoBrightnessToggleExtension extends Extension {
                 this._systemBtSlider._icon.gicon = abEnabled ? this._autoGicon : this._backupGicon;
             });
 
-            // Update icon once when the exrension first start
+            // Update icon once when the extension first start
             let abEnabled = this._autoBrightnessSettings.get_boolean(KEY);
             this._systemBtSlider._icon.gicon = abEnabled ? this._autoGicon : this._backupGicon;
         } else {
@@ -206,7 +235,7 @@ export default class AutoBrightnessToggleExtension extends Extension {
                 this._systemBtSlider._icon.gicon = this._backupGicon;
             }
             this._hBtSliderBtnClicked = null;
-            this._autoBrightnessSettings.disconnect(this._hAbtSettingsChanged);
+            this._autoBrightnessSettings?.disconnect(this._hAbtSettingsChanged);
             this._hAbtSettingsChanged = null;
         }
     }
@@ -225,12 +254,15 @@ export default class AutoBrightnessToggleExtension extends Extension {
         while (this._prefsListener.length != 0) {
             this._settings.disconnect(this._prefsListener.pop());
         }
-        
         // If init ab timer ticking, stop & clear time and revert auto brightness settings
         if (this._hInitAbTimer) {
             clearTimeout(this._hInitAbTimer);
             this._autoBrightnessSettings.set_boolean(KEY, false);
             this._hInitAbTimer = null;
+        }
+        if (this._hBtSliderTimer) {
+            GLib.source_remove(this._hBtSliderTimer);
+            this._hBtSliderTimer = null;
         }
         this.showInQuickSettings(false);
         this.overrideSystemBrightnessSlider(false);
