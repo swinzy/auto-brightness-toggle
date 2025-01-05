@@ -2,7 +2,7 @@
 A GNOME extension that allows you to toggle auto brightness from quick settings.<br>
 | Current Support | Historical Support[^1] |
 |-----------------|------------------------|
-| 45, 46          | 43                     |
+| 45, 46, 47      | 43                     |
 
 *Note: Your system needs to support auto brightness. Check the troubleshoot section below to determine.*
 
