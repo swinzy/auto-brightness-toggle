@@ -120,12 +120,14 @@ export default class AutoBrightnessToggleExtension extends Extension {
                     extLog("Too many retries. Aborting.");
                     // TODO: For some reason this does not throw in my gnome-extensions app
                     throw new Error("Cannot find system brightness slider.");
+                    this._hBtSliderTimer = null;
                     return false;
                 }
 
                 // FOUND
                 if (Main.panel.statusArea.quickSettings._brightness) {
                     extLog("Brightness slider found.");
+                    this._hBtSliderTimer = null;
                     this._enable();
                     return false;
                 }
@@ -181,7 +183,7 @@ export default class AutoBrightnessToggleExtension extends Extension {
         this.showInQuickSettings(this._settings.get_boolean(SHOW_QUICK_SETTINGS_KEY));
 
         if (this._hInitAbTimer) {
-            clearTimeout(this._hInitAbTimer);
+            GLib.source_remove(this._hInitAbTimer);
             this._hInitAbTimer = null;
         }
         // Perform initial auto brightness
@@ -190,10 +192,11 @@ export default class AutoBrightnessToggleExtension extends Extension {
             let isInitAbOn = this._settings.get_boolean(AUTO_INIT_BT_KEY);
             if (isInitAbOn) {
                 this._autoBrightnessSettings.set_boolean(KEY, true);
-                this._hInitAbTimer = setTimeout(() => {
+                this._hInitAbTimer = GLib.timeout_add(GLib.PRIORITY_DEFAULT, INIT_AB_TIMEOUT, () => {
                     this._autoBrightnessSettings.set_boolean(KEY, false);
                     this._hInitAbTimer = null;
-                }, INIT_AB_TIMEOUT);
+                    return false;
+                });
             }
         }
 
@@ -256,7 +259,7 @@ export default class AutoBrightnessToggleExtension extends Extension {
         }
         // If init ab timer ticking, stop & clear time and revert auto brightness settings
         if (this._hInitAbTimer) {
-            clearTimeout(this._hInitAbTimer);
+            GLib.source_remove(this._hInitAbTimer);
             this._autoBrightnessSettings.set_boolean(KEY, false);
             this._hInitAbTimer = null;
         }
