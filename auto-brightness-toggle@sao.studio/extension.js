@@ -209,8 +209,8 @@ export default class AutoBrightnessToggleExtension extends Extension {
             this._systemBtSlider.icon_reactive = true;
 
             // Always keep only one event listener
-            if (this._hBtSliderBtnClicked !== null) {
-                // This should not produce an error even if the listener doesn't exist
+            // Handler is undefined on first enable; disconnecting it would trigger a GLib CRITICAL
+            if (this._hBtSliderBtnClicked) {
                 this._systemBtSlider.disconnect(this._hBtSliderBtnClicked);
             }
             this._hBtSliderBtnClicked = this._systemBtSlider.connect("icon-clicked", () => {
@@ -219,8 +219,8 @@ export default class AutoBrightnessToggleExtension extends Extension {
             })
 
             // Listen to auto brightness change and update icon
-            if (this._hAbChanged != null) {
-                this._autoBrightnessSettings.disconnect(this._hAbChanged);
+            if (this._hAbtSettingsChanged) {
+                this._autoBrightnessSettings.disconnect(this._hAbtSettingsChanged);
             }
             this._hAbtSettingsChanged = this._autoBrightnessSettings.connect(`changed::${KEY}`, () => {
                 let abEnabled = this._autoBrightnessSettings.get_boolean(KEY);
@@ -234,11 +234,15 @@ export default class AutoBrightnessToggleExtension extends Extension {
             // Revert changes and clean up "pointers"
             if (this._systemBtSlider !== undefined) {
                 this._systemBtSlider.icon_reactive = false;
-                this._systemBtSlider.disconnect(this._hBtSliderBtnClicked);
+                if (this._hBtSliderBtnClicked) {
+                    this._systemBtSlider.disconnect(this._hBtSliderBtnClicked);
+                }
                 this._systemBtSlider._icon.gicon = this._backupGicon;
             }
             this._hBtSliderBtnClicked = null;
-            this._autoBrightnessSettings?.disconnect(this._hAbtSettingsChanged);
+            if (this._hAbtSettingsChanged) {
+                this._autoBrightnessSettings?.disconnect(this._hAbtSettingsChanged);
+            }
             this._hAbtSettingsChanged = null;
         }
     }
