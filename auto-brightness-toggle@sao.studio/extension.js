@@ -37,6 +37,12 @@ const FIND_SYS_BT_SLIDER_TIMEOUT = 1000;
 const FIND_SYS_BT_SLIDER_MAX_RETRY = 10;
 const INIT_AB_TIMEOUT = 3000;
 
+// iio-sensor-proxy, which GNOME uses to read the ambient light sensor
+const SENSOR_PROXY_NAME = "net.hadess.SensorProxy";
+const SENSOR_PROXY_PATH = "/net/hadess/SensorProxy";
+// Worded as "not detected" rather than "not present": detection can be wrong
+const NO_SENSOR_SUBTITLE = "No ambient sensor detected";
+
 // This is generated from "Icon Library"
 const AUTO_ICON_SVG = "icons/auto-brightness-symbolic.svg";
 
@@ -64,6 +70,11 @@ const AutoBrightnessToggle = GObject.registerClass(
                 this, "checked",
                 Gio.SettingsBindFlags.DEFAULT);
         }
+
+        setSensorDetected(detected) {
+            this.subtitle = detected ? null : NO_SENSOR_SUBTITLE;
+            this.reactive = detected;
+        }
     });
 
 // No indicator, only toggle button
@@ -71,11 +82,15 @@ var AutoBrightnessIndicator = GObject.registerClass(
     class AutoBrightnessIndicator extends QuickSettings.SystemIndicator {
         _init(gicon) {
             super._init();
-            let toggle = new AutoBrightnessToggle();
+            this._toggle = new AutoBrightnessToggle();
             // Custom logo
-            toggle._icon.gicon = gicon;
-            this.quickSettingsItems.push(toggle);
+            this._toggle._icon.gicon = gicon;
+            this.quickSettingsItems.push(this._toggle);
             Main.panel.statusArea.quickSettings.addExternalIndicator(this);
+        }
+
+        setSensorDetected(detected) {
+            this._toggle.setSensorDetected(detected);
         }
 
         destroy() {
@@ -89,13 +104,70 @@ export default class AutoBrightnessToggleExtension extends Extension {
         super(metadata);
         this._indicator = null;
         this._prefsListener = [];
+        this._sensorProxy = null;
+        // null until the first check, so that first result is always logged
+        this._sensorDetected = null;
     }
 
-    // TODO: This is NOT working as per my test
-    // Check if the feature is supported on the system
+    // Same check GNOME Settings uses to show "Automatic Screen Brightness":
+    // iio-sensor-proxy must be running and report an ambient light sensor
     isAutoBrightnessSupported() {
-        // Borrowed from diegonz/toggle-auto-brightness
-        return Gio.Settings.list_schemas().indexOf(SCHEMA) != -1;
+        return this._sensorProxy?.g_name_owner != null &&
+            this._sensorProxy.get_cached_property("HasAmbientLight")?.unpack() === true;
+    }
+
+    _watchSensor() {
+        this._sensorCancellable = new Gio.Cancellable();
+        const proxy = new Gio.DBusProxy({
+            g_bus_type: Gio.BusType.SYSTEM,
+            g_name: SENSOR_PROXY_NAME,
+            g_object_path: SENSOR_PROXY_PATH,
+            g_interface_name: SENSOR_PROXY_NAME,
+            // Like GNOME Settings, only watch the service and never start it
+            g_flags: Gio.DBusProxyFlags.DO_NOT_AUTO_START,
+        });
+        proxy.init_async(GLib.PRIORITY_DEFAULT, this._sensorCancellable, (_proxy, result) => {
+            try {
+                proxy.init_finish(result);
+            } catch (e) {
+                if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    extLog(`Cannot watch the ambient light sensor: ${e.message}`);
+                return;
+            }
+            this._sensorProxy = proxy;
+            // Follow iio-sensor-proxy starting or stopping and sensors being hotplugged
+            this._hSensorOwner = proxy.connect("notify::g-name-owner", () => this._syncSensor());
+            this._hSensorProps = proxy.connect("g-properties-changed", () => this._syncSensor());
+            this._syncSensor();
+        });
+    }
+
+    _unwatchSensor() {
+        this._sensorCancellable?.cancel();
+        this._sensorCancellable = null;
+        if (this._sensorProxy) {
+            this._sensorProxy.disconnect(this._hSensorOwner);
+            this._sensorProxy.disconnect(this._hSensorProps);
+            this._sensorProxy = null;
+        }
+        this._sensorDetected = null;
+    }
+
+    _syncSensor() {
+        const detected = this.isAutoBrightnessSupported();
+        if (detected !== this._sensorDetected) {
+            this._sensorDetected = detected;
+            extLog(detected
+                ? "Ambient light sensor detected."
+                : "No ambient light sensor detected. Leaving the system brightness slider unchanged.");
+        }
+        this._syncSystemBrightnessSlider();
+        this._indicator?.setSensorDetected(detected);
+    }
+
+    _syncSystemBrightnessSlider() {
+        this.overrideSystemBrightnessSlider(
+            this._sensorDetected && this._settings.get_boolean(SYSTEM_BT_SLIDER_KEY));
     }
 
     enable() {
@@ -117,9 +189,8 @@ export default class AutoBrightnessToggleExtension extends Extension {
             this._hBtSliderTimer = GLib.timeout_add(GLib.PRIORITY_DEFAULT, FIND_SYS_BT_SLIDER_TIMEOUT, () => {
                 // If too many retries
                 if (tries >= FIND_SYS_BT_SLIDER_MAX_RETRY) {
-                    extLog("Too many retries. Aborting.");
-                    // TODO: For some reason this does not throw in my gnome-extensions app
-                    throw new Error("Cannot find system brightness slider.");
+                    // Throwing here would not reach the extension manager, as this runs outside enable()
+                    extLog("Cannot find system brightness slider. Too many retries, aborting.");
                     this._hBtSliderTimer = null;
                     return false;
                 }
@@ -141,12 +212,6 @@ export default class AutoBrightnessToggleExtension extends Extension {
     }
 
     _enable() {
-        // If auto brightness is not supported, throw error 
-        if (!this.isAutoBrightnessSupported()) {
-            throw new Error("Auto brightness is not supported on this system. \n" +
-                "Visit https://github.com/swinzy/auto-brightness-toggle/wiki for more information.");
-            return;
-        }
         // Get the system brightness slider
         this._systemBtSlider = Main.panel.statusArea.quickSettings
             ._brightness.quickSettingsItems[0];
@@ -171,16 +236,16 @@ export default class AutoBrightnessToggleExtension extends Extension {
         this._autoGicon = Gio.icon_new_for_string(`${this.path}/${AUTO_ICON_SVG}`);
  
         // Watch preferences changes
-        this._prefsListener.push(this._settings.connect(`changed::${SYSTEM_BT_SLIDER_KEY}`, (settings, key) => {
-            this.overrideSystemBrightnessSlider(settings.get_boolean(key));
+        this._prefsListener.push(this._settings.connect(`changed::${SYSTEM_BT_SLIDER_KEY}`, () => {
+            this._syncSystemBrightnessSlider();
         }));
         this._prefsListener.push(this._settings.connect(`changed::${SHOW_QUICK_SETTINGS_KEY}`, (settings, key) => {
             this.showInQuickSettings(settings.get_boolean(key));
         }));
 
-        // Load preferences initially
-        this.overrideSystemBrightnessSlider(this._settings.get_boolean(SYSTEM_BT_SLIDER_KEY));
+        // Load preferences initially. The slider is only taken over once a sensor is detected.
         this.showInQuickSettings(this._settings.get_boolean(SHOW_QUICK_SETTINGS_KEY));
+        this._watchSensor();
 
         if (this._hInitAbTimer) {
             GLib.source_remove(this._hInitAbTimer);
@@ -249,7 +314,11 @@ export default class AutoBrightnessToggleExtension extends Extension {
 
     showInQuickSettings(enable) {
         if (enable) {
-            this._indicator = new AutoBrightnessIndicator(this._autoGicon);
+            if (!this._indicator) {
+                this._indicator = new AutoBrightnessIndicator(this._autoGicon);
+            }
+            // No hint until the first check, so it does not flash up on systems with a sensor
+            this._indicator.setSensorDetected(this._sensorDetected !== false);
         } else {
             this._indicator?.destroy();
             this._indicator = null;
@@ -271,6 +340,7 @@ export default class AutoBrightnessToggleExtension extends Extension {
             GLib.source_remove(this._hBtSliderTimer);
             this._hBtSliderTimer = null;
         }
+        this._unwatchSensor();
         this.showInQuickSettings(false);
         this.overrideSystemBrightnessSlider(false);
         this._settings = null;

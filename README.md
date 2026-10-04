@@ -16,7 +16,7 @@ Additional preferences can be made to include a toggle in the quick settings pan
 ## Troubleshoot:
 If the extension is not working, check if your system supports auto brightness.
 
-Usually if the extension detects that your device is not supported, it will throw an error that should be visible in most extension managers.
+The extension only takes over the system brightness slider once it detects an ambient light sensor (through `iio-sensor-proxy`, the same way GNOME Settings does). If no sensor is detected, the slider is left unchanged, and the optional quick settings toggle shows "No ambient sensor detected". It picks the sensor up automatically if it appears later.
 
 Alternatively, you may manually check by going to `Gnome Settings` -> `Power` and look for `Automatic Screen Brightness`. If this option is not found, it most likely means your system does not support auto brightness (e.g. does not have an ambient sensor / bad GPU driver), hence the extension will not work.
 
