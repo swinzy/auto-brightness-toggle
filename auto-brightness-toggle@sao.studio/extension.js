@@ -103,7 +103,6 @@ export default class AutoBrightnessToggleExtension extends Extension {
     constructor(metadata) {
         super(metadata);
         this._indicator = null;
-        this._prefsListener = [];
         this._sensorProxy = null;
         // null until the first check, so that first result is always logged
         this._sensorDetected = null;
@@ -219,13 +218,11 @@ export default class AutoBrightnessToggleExtension extends Extension {
         // Backup system original icon
         this._backupGicon = this._systemBtSlider._icon.gicon; 
 
+        // Disconnect listeners left on the previous settings object, if any
+        this._disconnectPrefs();
+
         // Load preferences
         this._settings = this.getSettings(PREFS_SCHEMA);
-        
-        // Disconnect all listeners if any
-        while (this._prefsListener.length != 0) {
-            this._settings.disconnect(this._prefsListener.pop());
-        }
         
         // Get system auto brightnesss schema
         this._autoBrightnessSettings = new Gio.Settings({
@@ -236,12 +233,12 @@ export default class AutoBrightnessToggleExtension extends Extension {
         this._autoGicon = Gio.icon_new_for_string(`${this.path}/${AUTO_ICON_SVG}`);
  
         // Watch preferences changes
-        this._prefsListener.push(this._settings.connect(`changed::${SYSTEM_BT_SLIDER_KEY}`, () => {
+        this._hOverridePrefChanged = this._settings.connect(`changed::${SYSTEM_BT_SLIDER_KEY}`, () => {
             this._syncSystemBrightnessSlider();
-        }));
-        this._prefsListener.push(this._settings.connect(`changed::${SHOW_QUICK_SETTINGS_KEY}`, (settings, key) => {
+        });
+        this._hShowPrefChanged = this._settings.connect(`changed::${SHOW_QUICK_SETTINGS_KEY}`, (settings, key) => {
             this.showInQuickSettings(settings.get_boolean(key));
-        }));
+        });
 
         // Load preferences initially. The slider is only taken over once a sensor is detected.
         this.showInQuickSettings(this._settings.get_boolean(SHOW_QUICK_SETTINGS_KEY));
@@ -325,11 +322,19 @@ export default class AutoBrightnessToggleExtension extends Extension {
         }
     }
 
-    disable() {
-        // Disconnect all listeners if any
-        while (this._prefsListener.length != 0) {
-            this._settings.disconnect(this._prefsListener.pop());
+    _disconnectPrefs() {
+        if (this._hOverridePrefChanged) {
+            this._settings.disconnect(this._hOverridePrefChanged);
+            this._hOverridePrefChanged = null;
         }
+        if (this._hShowPrefChanged) {
+            this._settings.disconnect(this._hShowPrefChanged);
+            this._hShowPrefChanged = null;
+        }
+    }
+
+    disable() {
+        this._disconnectPrefs();
         // If init ab timer ticking, stop & clear time and revert auto brightness settings
         if (this._hInitAbTimer) {
             GLib.source_remove(this._hInitAbTimer);
