@@ -1,0 +1,6 @@
+{
+  "name": "Auto Brightness Toggle Test",
+  "description": "Test harness for Auto Brightness Toggle. Used by run.sh only.",
+  "uuid": "abttest@local",
+  "shell-version": ["45", "46", "47", "48", "49", "50", "51"]
+}

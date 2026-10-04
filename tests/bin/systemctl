@@ -1,0 +1,4 @@
+#!/bin/sh
+# Never let a test reboot or power off anything
+echo "fake systemctl: $*" >&2
+exit 0
