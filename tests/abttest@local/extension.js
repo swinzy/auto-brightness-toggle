@@ -8,6 +8,7 @@ import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const UUID = 'auto-brightness-toggle@sao.studio';
 const PREFS_SCHEMA = 'org.gnome.shell.extensions.auto-brightness-toggle';
+const NO_SENSOR_SUBTITLE = 'No ambient sensor detected';
 const ACTIVE = 1;
 
 const log = msg => console.log(`ABTTEST: ${msg}`);
@@ -25,12 +26,33 @@ async function waitFor(what, fn, timeoutMs = 15000) {
     throw new Error(`timed out waiting for ${what}`);
 }
 
+// Controls tests/mock-sensor-proxy.js on the private system bus set up by run.sh
+class MockSensor {
+    start(hasAmbientLight) {
+        this._process = Gio.Subprocess.new(
+            ['gjs', '-m', `${GLib.getenv('ABT_TESTS')}/mock-sensor-proxy.js`, String(hasAmbientLight)],
+            Gio.SubprocessFlags.NONE);
+    }
+
+    setHasAmbientLight(value) {
+        Gio.DBus.system.call_sync('net.hadess.SensorProxy', '/net/hadess/SensorProxy',
+            'net.hadess.SensorProxy.Test', 'SetHasAmbientLight', new GLib.Variant('(b)', [value]),
+            null, Gio.DBusCallFlags.NONE, 5000, null);
+    }
+
+    stop() {
+        this._process?.force_exit();
+        this._process = null;
+    }
+}
+
 export default class AbtTest extends Extension {
     enable() {
         // enable() can run twice if the shell rebases extensions; only start once
         if (globalThis.__abtTestStarted)
             return;
         globalThis.__abtTestStarted = true;
+        this._sensor = new MockSensor();
         this._run().then(
             () => this._finish('ok'),
             e => {
@@ -42,6 +64,7 @@ export default class AbtTest extends Extension {
     disable() {}
 
     _finish(result) {
+        this._sensor.stop();
         const dir = GLib.getenv('ABT_TEST_DIR');
         log(`RESULT ${result}`);
         if (dir)
@@ -68,9 +91,32 @@ export default class AbtTest extends Extension {
         const menuToggles = () => Main.panel.statusArea.quickSettings.menu._grid.get_children()
             .filter(c => c.title === 'Auto Brightness');
         const isAutoIcon = () => slider._icon.gicon?.equal?.(abt._autoGicon) ?? false;
-
         this._check(abt._systemBtSlider === slider, 'extension holds the system brightness slider');
-        this._check(slider.icon_reactive, 'slider icon is clickable when override is on');
+
+        // No iio-sensor-proxy on the bus: the slider is left alone and the toggle says so
+        prefs.set_boolean('show-in-quick-settings', true);
+        await sleep(1000);
+        this._check(abt._sensorProxy !== null, 'sensor proxy is watched even while the service is missing');
+        this._check(!slider.icon_reactive, 'no sensor service: slider is not taken over');
+        let toggle = menuToggles()[0];
+        this._check(toggle?.subtitle === NO_SENSOR_SUBTITLE && !toggle.reactive,
+            `no sensor service: toggle shows "${NO_SENSOR_SUBTITLE}" and is not clickable`);
+
+        // Service appears but reports no ambient light sensor
+        this._sensor.start(false);
+        await waitFor('sensor proxy owner', () => abt._sensorProxy.g_name_owner !== null);
+        await sleep(500);
+        this._check(!slider.icon_reactive && toggle.subtitle === NO_SENSOR_SUBTITLE,
+            'service without a light sensor: still not taken over');
+
+        // Sensor hotplugged
+        this._sensor.setHasAmbientLight(true);
+        await waitFor('slider taken over', () => slider.icon_reactive);
+        this._check(true, 'sensor appears: slider icon becomes clickable');
+        this._check(!toggle.subtitle && toggle.reactive, 'sensor appears: toggle hint cleared and clickable');
+        prefs.set_boolean('show-in-quick-settings', false);
+        await sleep(300);
+        this._check(menuToggles().length === 0, 'quick settings toggle can be hidden again');
         this._check(!isAutoIcon(), 'icon is the normal one while auto brightness is off');
 
         // Click the icon (the button's clicked signal is what the shell turns into icon-clicked)
@@ -97,8 +143,9 @@ export default class AbtTest extends Extension {
         // Separate quick settings toggle
         prefs.set_boolean('show-in-quick-settings', true);
         await sleep(300);
-        const toggle = abt._indicator?.quickSettingsItems[0];
-        this._check(toggle && menuToggles().length === 1, 'quick settings toggle is added to the menu');
+        toggle = abt._indicator?.quickSettingsItems[0];
+        this._check(toggle && menuToggles().length === 1, 'quick settings toggle is added to the menu once');
+        this._check(!toggle.subtitle, 'toggle has no hint while a sensor is detected');
         ambient.set_boolean('ambient-enabled', true);
         await sleep(300);
         this._check(toggle.checked, 'quick settings toggle follows auto brightness');
@@ -114,17 +161,22 @@ export default class AbtTest extends Extension {
         await waitFor('extension inactive', () => ext().state !== ACTIVE);
         await sleep(300);
         this._check(!slider.icon_reactive, 'disabled: icon no longer clickable');
+        this._check(abt._sensorProxy === null, 'disabled: sensor proxy released');
         slider.emit('icon-clicked');
         ambient.set_boolean('ambient-enabled', true);
         await sleep(300);
         this._check(!isAutoIcon(), 'disabled: no leftover listener changes the icon');
         ambient.set_boolean('ambient-enabled', false);
 
-        // Enable again
+        // Enable again: the sensor is found again
         await manager.enableExtension(UUID);
-        await waitFor('extension active again', () => ext()?.state === ACTIVE && ext().stateObj._systemBtSlider);
-        await sleep(300);
-        this._check(slider.icon_reactive, 're-enabled: icon clickable again');
+        await waitFor('slider taken over again', () => ext()?.state === ACTIVE && slider.icon_reactive);
+        this._check(true, 're-enabled: icon clickable again');
+
+        // Sensor goes away (iio-sensor-proxy stops): the slider is handed back
+        this._sensor.stop();
+        await waitFor('slider handed back', () => !slider.icon_reactive);
+        this._check(!isAutoIcon(), 'sensor service gone: slider handed back with its own icon');
         prefs.reset('override-system-brightness-slider');
         prefs.reset('show-in-quick-settings');
 
