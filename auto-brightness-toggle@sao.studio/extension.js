@@ -293,19 +293,19 @@ export default class AutoBrightnessToggleExtension extends Extension {
             let abEnabled = this._autoBrightnessSettings.get_boolean(KEY);
             this._systemBtSlider._icon.gicon = abEnabled ? this._autoGicon : this._backupGicon;
         } else {
-            // Revert changes and clean up "pointers"
-            if (this._systemBtSlider !== undefined) {
+            // Release signals unconditionally; only restoring the slider depends on it existing
+            if (this._hBtSliderBtnClicked) {
+                this._systemBtSlider.disconnect(this._hBtSliderBtnClicked);
+                this._hBtSliderBtnClicked = null;
+            }
+            if (this._hAbtSettingsChanged) {
+                this._autoBrightnessSettings.disconnect(this._hAbtSettingsChanged);
+                this._hAbtSettingsChanged = null;
+            }
+            if (this._systemBtSlider) {
                 this._systemBtSlider.icon_reactive = false;
-                if (this._hBtSliderBtnClicked) {
-                    this._systemBtSlider.disconnect(this._hBtSliderBtnClicked);
-                }
                 this._systemBtSlider._icon.gicon = this._backupGicon;
             }
-            this._hBtSliderBtnClicked = null;
-            if (this._hAbtSettingsChanged) {
-                this._autoBrightnessSettings?.disconnect(this._hAbtSettingsChanged);
-            }
-            this._hAbtSettingsChanged = null;
         }
     }
 
@@ -348,6 +348,10 @@ export default class AutoBrightnessToggleExtension extends Extension {
         this._unwatchSensor();
         this.showInQuickSettings(false);
         this.overrideSystemBrightnessSlider(false);
+        // Keep no references once disabled
+        this._systemBtSlider = null;
+        this._backupGicon = null;
+        this._autoGicon = null;
         this._settings = null;
         this._autoBrightnessSettings = null;
     }

@@ -162,6 +162,8 @@ export default class AbtTest extends Extension {
         await sleep(300);
         this._check(!slider.icon_reactive, 'disabled: icon no longer clickable');
         this._check(abt._sensorProxy === null, 'disabled: sensor proxy released');
+        this._check(abt._systemBtSlider === null && abt._backupGicon === null && abt._autoGicon === null,
+            'disabled: no references to the slider or icons kept');
         slider.emit('icon-clicked');
         ambient.set_boolean('ambient-enabled', true);
         await sleep(300);
