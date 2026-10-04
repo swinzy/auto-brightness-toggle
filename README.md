@@ -27,4 +27,14 @@ If you believe your device supports automatic brightness, please submit an issue
 - Shows a separate toggle in quick settings (optional)
 - Automatically determines an initial brightness whenever your device is being logged on / waken from sleep (optional)
 
+## Supported GNOME versions
+At a minimum, this extension supports the GNOME versions shipped by:
+- The **two** latest Ubuntu LTS releases
+- The latest Debian release
+- The latest RHEL release
+- The latest SLES / openSUSE Leap release
+- The latest Fedora Beta (the upcoming Fedora release, not Rawhide).
+
+The supported range is from the oldest GNOME version to the latest GNOME version used among the above list, and is reviewed whenever one of these distributions has a new release. GNOME versions that are no longer supported can still install the last release of this extension that supported them from GNOME Extensions.
+
 [^1]: Will not receive updates.
