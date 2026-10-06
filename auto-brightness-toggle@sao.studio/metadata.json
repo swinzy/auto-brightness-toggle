@@ -4,7 +4,7 @@
   "uuid": "auto-brightness-toggle@sao.studio",
   "url": "https://github.com/swinzy/auto-brightness-toggle",
   "settings-schema": "org.gnome.shell.extensions.auto-brightness-toggle", 
-  "version": 8,
+  "version": 9,
   "shell-version": [
     "45",
     "46",
