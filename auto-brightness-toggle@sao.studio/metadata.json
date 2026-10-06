@@ -1,6 +1,6 @@
 {
   "name": "Auto Brightness Toggle",
-  "description": "Toggle auto brightness in quick settings",
+  "description": "Toggle auto brightness in quick settings\n\nSupports making the system brightness slider icon clickable, or adding a dedicated quick settings toggle (or both).\n\nAny suggestion is appreciated on GitHub!",
   "uuid": "auto-brightness-toggle@sao.studio",
   "gettext-domain": "auto-brightness-toggle@sao.studio",
   "url": "https://github.com/swinzy/auto-brightness-toggle",
