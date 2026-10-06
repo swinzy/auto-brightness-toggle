@@ -1,0 +1,68 @@
+# Spanish (Spain) translation for Auto Brightness Toggle.
+# This file is distributed under the same license as the Auto Brightness Toggle package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Auto Brightness Toggle\n"
+"Report-Msgid-Bugs-To: https://github.com/swinzy/auto-brightness-toggle/issues\n"
+"POT-Creation-Date: 2026-10-06 15:38+1100\n"
+"PO-Revision-Date: 2026-10-06 18:00+1100\n"
+"Last-Translator: Stephen Zhang <19246983+swinzy@users.noreply.github.com>\n"
+"Language-Team: Spanish (Spain)\n"
+"Language: es_ES\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: auto-brightness-toggle@sao.studio/extension.js:46
+msgid "No ambient sensor detected"
+msgstr "No se ha detectado ningún sensor ambiental"
+
+#: auto-brightness-toggle@sao.studio/extension.js:62
+msgid "Auto Brightness"
+msgstr "Brillo automático"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:13
+msgid "Preferences"
+msgstr "Preferencias"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:18
+msgid "Behaviour"
+msgstr "Comportamiento"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:19
+msgid "Configure where to show the auto brightness toggle."
+msgstr "Configure dónde se muestra el interruptor de brillo automático."
+
+#: auto-brightness-toggle@sao.studio/prefs.js:25
+msgid "Override System Brightness Slider Icon"
+msgstr "Controlar el icono del deslizador de brillo del sistema"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:26
+msgid "Toggle auto brightness by clicking the icon of the brightness slider."
+msgstr "Pulse el icono del deslizador de brillo para activar o desactivar el brillo automático."
+
+#: auto-brightness-toggle@sao.studio/prefs.js:32
+msgid "Show in Quick Settings"
+msgstr "Mostrar en la configuración rápida"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:33
+msgid "Add a new \"Auto Brightness\" toggle in the quick settings."
+msgstr "Añade un interruptor «Brillo automático» a la configuración rápida."
+
+#: auto-brightness-toggle@sao.studio/prefs.js:39
+msgid "Enable Initial Auto Brightness"
+msgstr "Activar el brillo automático inicial"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:40
+msgid ""
+"Automatically determine a brightness level when you first start / logon / "
+"recover from sleep by enabling auto brightness for a short period of time. "
+"This is helpful when you need to frequently move your device to various "
+"environments."
+msgstr "Determina automáticamente un nivel de brillo al encender, iniciar sesión o salir de la suspensión, activando el brillo automático durante un breve periodo. Es útil si mueve el dispositivo con frecuencia entre entornos distintos."
+
+#: auto-brightness-toggle@sao.studio/prefs.js:64
+msgid "Report Bugs"
+msgstr "Informar de un error"

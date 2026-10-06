@@ -38,7 +38,7 @@ At a minimum, this extension supports the GNOME versions shipped by:
 The supported range is from the oldest GNOME version to the latest GNOME version used among the above list, and is reviewed whenever one of these distributions has a new release. GNOME versions that are no longer supported can still install the last release of this extension that supported them from GNOME Extensions.
 
 ## Translations
-Translations live in [`po/`](po/). Currently available: Chinese (Simplified, `zh_CN`) and Chinese (Traditional, `zh_TW`).
+Translations live in [`po/`](po/). Currently available: Chinese (Simplified, `zh_CN`), Chinese (Traditional, `zh_TW`), Spanish for Spain (`es_ES`) and Spanish for Latin America and other regions (`es`).
 
 To add or update one:
 1. Run `tools/update-pot.sh` to refresh the template and existing translations
