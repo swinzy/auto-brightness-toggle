@@ -61,7 +61,7 @@ export default class AutoBrightnessTogglePreferences extends ExtensionPreference
         linkBox.append(githubLink);
 
         const reportLink = new Gtk.LinkButton({
-            label: _("Report Bugs"),
+            label: _("Report an Issue"),
             uri: "https://github.com/swinzy/auto-brightness-toggle/issues",
         });
         linkBox.append(reportLink);

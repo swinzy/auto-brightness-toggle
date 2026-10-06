@@ -64,5 +64,5 @@ msgid ""
 msgstr "在開機、登入或從睡眠中恢復時短暫開啟自動亮度，以自動決定合適的亮度。適合經常在不同環境間移動裝置的情況。"
 
 #: auto-brightness-toggle@sao.studio/prefs.js:64
-msgid "Report Bugs"
+msgid "Report an Issue"
 msgstr "回報問題"

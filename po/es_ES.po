@@ -64,5 +64,5 @@ msgid ""
 msgstr "Determina automáticamente un nivel de brillo al encender, iniciar sesión o salir de la suspensión, activando el brillo automático durante un breve periodo. Es útil si mueve el dispositivo con frecuencia entre entornos distintos."
 
 #: auto-brightness-toggle@sao.studio/prefs.js:64
-msgid "Report Bugs"
-msgstr "Informar de un error"
+msgid "Report an Issue"
+msgstr "Informar de un problema"
