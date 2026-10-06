@@ -24,7 +24,7 @@ import GObject from "gi://GObject";
 import St from "gi://St";
 import * as Main from "resource:///org/gnome/shell/ui/main.js";
 import * as QuickSettings from "resource:///org/gnome/shell/ui/quickSettings.js";
-import { Extension } from "resource:///org/gnome/shell/extensions/extension.js";
+import { Extension, gettext as _ } from "resource:///org/gnome/shell/extensions/extension.js";
 
 const SCHEMA = "org.gnome.settings-daemon.plugins.power";
 const KEY = "ambient-enabled";
@@ -40,8 +40,10 @@ const INIT_AB_TIMEOUT = 3000;
 // iio-sensor-proxy, which GNOME uses to read the ambient light sensor
 const SENSOR_PROXY_NAME = "net.hadess.SensorProxy";
 const SENSOR_PROXY_PATH = "/net/hadess/SensorProxy";
+// Translatable strings are looked up when used, not at module load:
+// the extension's translations are only set up once the extension object exists.
 // Worded as "not detected" rather than "not present": detection can be wrong
-const NO_SENSOR_SUBTITLE = "No ambient sensor detected";
+const noSensorSubtitle = () => _("No ambient sensor detected");
 
 // This is generated from "Icon Library"
 const AUTO_ICON_SVG = "icons/auto-brightness-symbolic.svg";
@@ -57,7 +59,7 @@ const AutoBrightnessToggle = GObject.registerClass(
         
         _init() {
             super._init({
-                "title": "Auto Brightness",
+                "title": _("Auto Brightness"),
                 iconName: "display-brightness-symbolic", // Default logo
                 toggleMode: true,
             });
@@ -72,7 +74,7 @@ const AutoBrightnessToggle = GObject.registerClass(
         }
 
         setSensorDetected(detected) {
-            this.subtitle = detected ? null : NO_SENSOR_SUBTITLE;
+            this.subtitle = detected ? null : noSensorSubtitle();
             this.reactive = detected;
         }
     });

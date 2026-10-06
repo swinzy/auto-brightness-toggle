@@ -3,12 +3,19 @@
 // extension inside a headless GNOME Shell and writes the result to $ABT_TEST_DIR/done.
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+import Gettext from 'gettext';
 import * as Main from 'resource:///org/gnome/shell/ui/main.js';
 import {Extension} from 'resource:///org/gnome/shell/extensions/extension.js';
 
 const UUID = 'auto-brightness-toggle@sao.studio';
-const PREFS_SCHEMA = 'org.gnome.shell.extensions.auto-brightness-toggle';
-const NO_SENSOR_SUBTITLE = 'No ambient sensor detected';
+const SETTINGS_SCHEMA = 'org.gnome.shell.extensions.auto-brightness-toggle';
+// Expected texts in the current locale, from the extension's own translations
+const TOGGLE_TITLE_SOURCE = 'Auto Brightness';
+const TOGGLE_TITLE = Gettext.dgettext(UUID, TOGGLE_TITLE_SOURCE);
+const NO_SENSOR_SUBTITLE_SOURCE = 'No ambient sensor detected';
+const NO_SENSOR_SUBTITLE = Gettext.dgettext(UUID, NO_SENSOR_SUBTITLE_SOURCE);
+// Set to 1 when running in a locale the extension has a translation for
+const EXPECT_TRANSLATED = GLib.getenv('ABT_EXPECT_TRANSLATED') === '1';
 const ACTIVE = 1;
 
 const log = msg => console.log(`ABTTEST: ${msg}`);
@@ -86,10 +93,10 @@ export default class AbtTest extends Extension {
         log(`GNOME Shell ${(await import('resource:///org/gnome/shell/misc/config.js')).PACKAGE_VERSION}`);
         await waitFor('extension active', () => ext()?.state === ACTIVE && ext().stateObj._systemBtSlider);
         const abt = ext().stateObj;
-        const prefs = abt.getSettings(PREFS_SCHEMA);
+        const prefs = abt.getSettings(SETTINGS_SCHEMA);
         const slider = Main.panel.statusArea.quickSettings._brightness.quickSettingsItems[0];
         const menuToggles = () => Main.panel.statusArea.quickSettings.menu._grid.get_children()
-            .filter(c => c.title === 'Auto Brightness');
+            .filter(c => c.title === TOGGLE_TITLE);
         const isAutoIcon = () => slider._icon.gicon?.equal?.(abt._autoGicon) ?? false;
         this._check(abt._systemBtSlider === slider, 'extension holds the system brightness slider');
 
@@ -101,6 +108,11 @@ export default class AbtTest extends Extension {
         let toggle = menuToggles()[0];
         this._check(toggle?.subtitle === NO_SENSOR_SUBTITLE && !toggle.reactive,
             `no sensor service: toggle shows "${NO_SENSOR_SUBTITLE}" and is not clickable`);
+        if (EXPECT_TRANSLATED) {
+            this._check(toggle?.title !== TOGGLE_TITLE_SOURCE, `toggle title is translated: "${toggle?.title}"`);
+            this._check(toggle?.subtitle !== NO_SENSOR_SUBTITLE_SOURCE,
+                `toggle hint is translated: "${toggle?.subtitle}"`);
+        }
 
         // Service appears but reports no ambient light sensor
         this._sensor.start(false);

@@ -22,7 +22,7 @@ export default class AutoBrightnessTogglePreferences extends ExtensionPreference
 
         // Add toggles
         const overrideSystemSliderRow = new Adw.SwitchRow({
-            title: _("Override System Brightness Slider"),
+            title: _("Override System Brightness Slider Icon"),
             subtitle: _("Toggle auto brightness by clicking the icon of " +
                 "the brightness slider."),
         });
@@ -55,13 +55,13 @@ export default class AutoBrightnessTogglePreferences extends ExtensionPreference
         linkGroup.add(linkBox);
 
         const githubLink = new Gtk.LinkButton({
-            label: "Github",
+            label: "GitHub",
             uri: "https://github.com/swinzy/auto-brightness-toggle",
         });
         linkBox.append(githubLink);
 
         const reportLink = new Gtk.LinkButton({
-            label: "Report Bugs",
+            label: _("Report Bugs"),
             uri: "https://github.com/swinzy/auto-brightness-toggle/issues",
         });
         linkBox.append(reportLink);

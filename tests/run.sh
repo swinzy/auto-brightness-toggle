@@ -7,10 +7,12 @@
 # The system bus is replaced by a private one too, where tests/mock-sensor-proxy.js
 # plays iio-sensor-proxy so the ambient light sensor can come and go.
 #
-# Needs gnome-shell, dbus-daemon, dbus-run-session, gsettings, glib-compile-schemas
-# and gjs.
+# Needs gnome-shell, dbus-daemon, dbus-run-session, gsettings, glib-compile-schemas,
+# gjs and msgfmt (gettext, to compile translations).
 #
-# Usage: tests/run.sh [extension dir]   (defaults to the one in this repo)
+# Usage: tests/run.sh [extension dir]   (defaults to tools/build.sh output for this repo)
+# LANG is passed through to the shell. Set ABT_EXPECT_TRANSLATED=1 with a LANG the
+# extension has a translation for, e.g. LANG=zh_CN.UTF-8 ABT_EXPECT_TRANSLATED=1 tests/run.sh
 # Exit status is 0 if all checks pass and no GLib/GJS criticals were logged
 # before the shell started shutting down.
 set -u
@@ -18,12 +20,16 @@ set -u
 TESTS=$(cd "$(dirname "$0")" && pwd)
 REPO=$(dirname "$TESTS")
 UUID=auto-brightness-toggle@sao.studio
-EXT=$(cd "${1:-$REPO/$UUID}" && pwd)
 TIMEOUT=90
 
 T=$(mktemp -d "${TMPDIR:-/tmp}/abt-test.XXXXXX")
 mkdir -p "$T"/{home,config,data/gnome-shell/extensions,cache}
-cp -r "$EXT" "$T/data/gnome-shell/extensions/$UUID"
+if [ $# -gt 0 ]; then
+    cp -r "$(cd "$1" && pwd)" "$T/data/gnome-shell/extensions/$UUID"
+else
+    # Install what would be packed, including compiled translations
+    "$REPO/tools/build.sh" "$T/data/gnome-shell/extensions" || { echo "RESULT: build failed"; exit 1; }
+fi
 glib-compile-schemas "$T/data/gnome-shell/extensions/$UUID/schemas"
 cp -r "$TESTS/abttest@local" "$T/data/gnome-shell/extensions/"
 

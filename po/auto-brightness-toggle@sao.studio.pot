@@ -1,0 +1,71 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the Auto Brightness Toggle package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Auto Brightness Toggle\n"
+"Report-Msgid-Bugs-To: https://github.com/swinzy/auto-brightness-toggle/"
+"issues\n"
+"POT-Creation-Date: 2026-10-06 15:38+1100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: auto-brightness-toggle@sao.studio/extension.js:46
+msgid "No ambient sensor detected"
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/extension.js:62
+msgid "Auto Brightness"
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:13
+msgid "Preferences"
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:18
+msgid "Behaviour"
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:19
+msgid "Configure where to show the auto brightness toggle."
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:25
+msgid "Override System Brightness Slider Icon"
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:26
+msgid "Toggle auto brightness by clicking the icon of the brightness slider."
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:32
+msgid "Show in Quick Settings"
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:33
+msgid "Add a new \"Auto Brightness\" toggle in the quick settings."
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:39
+msgid "Enable Initial Auto Brightness"
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:40
+msgid ""
+"Automatically determine a brightness level when you first start / logon / "
+"recover from sleep by enabling auto brightness for a short period of time. "
+"This is helpful when you need to frequently move your device to various "
+"environments."
+msgstr ""
+
+#: auto-brightness-toggle@sao.studio/prefs.js:64
+msgid "Report Bugs"
+msgstr ""
