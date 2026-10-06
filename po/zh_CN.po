@@ -1,0 +1,68 @@
+# Chinese (China) translation for Auto Brightness Toggle.
+# This file is distributed under the same license as the Auto Brightness Toggle package.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Auto Brightness Toggle\n"
+"Report-Msgid-Bugs-To: https://github.com/swinzy/auto-brightness-toggle/issues\n"
+"POT-Creation-Date: 2026-10-06 15:31+1100\n"
+"PO-Revision-Date: 2026-10-06 12:00+1100\n"
+"Last-Translator: Stephen Zhang <19246983+swinzy@users.noreply.github.com>\n"
+"Language-Team: Chinese (China)\n"
+"Language: zh_CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+#: auto-brightness-toggle@sao.studio/extension.js:46
+msgid "No ambient sensor detected"
+msgstr "未检测到环境光传感器"
+
+#: auto-brightness-toggle@sao.studio/extension.js:62
+msgid "Auto Brightness"
+msgstr "自动亮度"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:13
+msgid "Preferences"
+msgstr "首选项"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:18
+msgid "Behaviour"
+msgstr "行为"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:19
+msgid "Configure where to show the auto brightness toggle."
+msgstr "设置自动亮度开关的显示位置。"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:25
+msgid "Override System Brightness Slider Icon"
+msgstr "接管系统亮度滑块图标"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:26
+msgid "Toggle auto brightness by clicking the icon of the brightness slider."
+msgstr "点击亮度滑块的图标即可开关自动亮度。"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:32
+msgid "Show in Quick Settings"
+msgstr "在快速设置中显示"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:33
+msgid "Add a new \"Auto Brightness\" toggle in the quick settings."
+msgstr "在快速设置中添加“自动亮度”开关。"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:39
+msgid "Enable Initial Auto Brightness"
+msgstr "启用初始自动亮度"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:40
+msgid ""
+"Automatically determine a brightness level when you first start / logon / "
+"recover from sleep by enabling auto brightness for a short period of time. "
+"This is helpful when you need to frequently move your device to various "
+"environments."
+msgstr "在开机、登录或从睡眠中恢复时短暂开启自动亮度，以自动确定合适的亮度。适合经常在不同环境间移动设备的情况。"
+
+#: auto-brightness-toggle@sao.studio/prefs.js:64
+msgid "Report Bugs"
+msgstr "报告问题"
