@@ -5,7 +5,7 @@
   "gettext-domain": "auto-brightness-toggle@sao.studio",
   "url": "https://github.com/swinzy/auto-brightness-toggle",
   "settings-schema": "org.gnome.shell.extensions.auto-brightness-toggle", 
-  "version": 9,
+  "version": 10,
   "shell-version": [
     "45",
     "46",
